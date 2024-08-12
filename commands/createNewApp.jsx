@@ -1,30 +1,35 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const inquirer = require('inquirer');
 const chalk = require('chalk');
+const inquirer = require('inquirer');
 
 async function createNewApp() {
-  const { appName, componentName, className } = await inquirer.prompt([
+  console.log(chalk.blue('Welcome to Claude Tools App Creator!'));
+  console.log(chalk.yellow('Let\'s set up your new Claude-ready React app.'));
+
+  const answers = await inquirer.prompt([
     {
       type: 'input',
       name: 'appName',
-      message: 'What is the name of your app?',
-      validate: input => input.length > 0 || 'Please enter an app name'
+      message: 'What is the name of your project?',
+      default: 'my-claude-app'
     },
     {
       type: 'input',
       name: 'componentName',
       message: 'What should we name the main component?',
-      default: 'LLMModel'
+      default: 'MyComponent'
     },
     {
-      type: 'input',
-      name: 'className',
-      message: 'What CSS class name should we use for the component?',
-      default: 'w-[350px]'
+      type: 'confirm',
+      name: 'installLucide',
+      message: 'Would you like to install and use lucide-react icons?',
+      default: false
     }
   ]);
+
+  const { appName, componentName, installLucide } = answers;
 
   console.log(chalk.blue(`Creating a new Claude app: ${appName}`));
 
@@ -52,7 +57,6 @@ export default defineConfig({
   },
 })
 `;
-
   fs.writeFileSync('vite.config.js', viteConfig);
 
   // Create jsconfig.json
@@ -67,7 +71,6 @@ export default defineConfig({
   "include": ["src/**/*"]
 }
 `;
-
   fs.writeFileSync('jsconfig.json', jsConfig);
 
   // Initialize shadcn-ui
@@ -75,7 +78,10 @@ export default defineConfig({
 
   // Step 3: Install other libraries and components
   execSync('npx shadcn-ui@latest add card button input', { stdio: 'inherit' });
-  execSync('npm install lucide-react', { stdio: 'inherit' });
+  
+  if (installLucide) {
+    execSync('npm install lucide-react', { stdio: 'inherit' });
+  }
 
   // Step 4: Add main component
   const componentContent = `
@@ -83,6 +89,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+${installLucide ? "import { Send } from 'lucide-react';" : ""}
 
 const ${componentName} = () => {
   const [inputText, setInputText] = useState('');
@@ -95,7 +102,7 @@ const ${componentName} = () => {
   };
 
   return (
-    <Card className="${className}">
+    <Card className="w-full max-w-md mx-auto mt-6">
       <CardHeader>
         <CardTitle>LLM Model Interface</CardTitle>
       </CardHeader>
@@ -110,7 +117,10 @@ const ${componentName} = () => {
         </form>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button onClick={handleSubmit}>Submit</Button>
+        <Button onClick={handleSubmit}>
+          ${installLucide ? "<Send className='mr-2 h-4 w-4' />" : ""}
+          Submit
+        </Button>
       </CardFooter>
       {outputText && (
         <CardContent>
@@ -134,9 +144,10 @@ import ${componentName} from './components/${componentName}'
 
 function App() {
   return (
-    <>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Welcome to ${appName}</h1>
       <${componentName}/>
-    </>
+    </div>
   )
 }
 
@@ -145,9 +156,19 @@ export default App
 
   fs.writeFileSync(path.join('src', 'App.jsx'), appJsxContent);
 
-  console.log(chalk.green('New Claude app created successfully!'));
-  console.log(chalk.yellow('To start the app, run:'));
-  console.log(chalk.cyan(`cd ${appName} && npm run dev`));
+  // Update index.css with Tailwind directives
+  const indexCssContent = `
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+`;
+  fs.writeFileSync(path.join('src', 'index.css'), indexCssContent);
+
+  console.log(chalk.green('\nNew Claude app created successfully!'));
+  console.log(chalk.yellow('\nNext steps:'));
+  console.log(chalk.cyan(`1. cd ${appName}`));
+  console.log(chalk.cyan('2. npm run dev'));
+  console.log(chalk.yellow('\nHappy coding!'));
 }
 
 module.exports = { createNewApp };
