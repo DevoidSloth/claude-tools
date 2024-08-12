@@ -1,9 +1,23 @@
 #!/usr/bin/env node
 
+const inquirer = require('inquirer');
 const { createNewApp } = require('./commands/createNewApp');
 
-if (process.argv[2] === 'new-app') {
-  createNewApp();
-} else {
-  console.log('Usage: claude-tools new-app');
-}
+console.log('Welcome to Claude Tools!');
+
+inquirer
+  .prompt([
+    {
+      type: "list",
+      name: "action",
+      message: "What would you like to do?",
+      choices: ["Create a new Claude app", "Exit"]
+    }
+  ])
+  .then(async (answers) => {
+    if (answers.action === "Create a new Claude app") {
+      await createNewApp();
+    } else {
+      console.log('Goodbye!');
+    }
+  });

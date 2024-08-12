@@ -1,20 +1,33 @@
 {
-  "name": "@devoidsloth/claude-tools",
-  "version": "1.0.0",
+  "name": "claude-tools",
+  "version": "1.0.4",
   "description": "CLI tools for creating and managing Claude artifacts",
   "main": "index.js",
   "bin": {
     "claude-tools": "./index.js"
   },
+  "files": [
+    "index.js",
+    "commands"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["claude", "react", "cli"],
+  "keywords": ["claude", "react", "cli", "ai", "artifact"],
   "author": "Devoid Sloth",
   "license": "MIT",
   "dependencies": {
     "inquirer": "^8.2.4",
     "chalk": "^4.1.2",
-    "commander": "^8.3.0"
-  }
+    "commander": "^8.3.0",
+    "axios": "^0.21.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DevoidSloth/claude-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DevoidSloth/claude-tools/issues"
+  },
+  "homepage": "https://github.com/DevoidSloth/claude-tools#readme"
 }

@@ -1,13 +1,10 @@
+const inquirer = require('inquirer');
+const chalk = require('chalk');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const chalk = require('chalk');
-const inquirer = require('inquirer');
 
 async function createNewApp() {
-  console.log(chalk.blue('Welcome to Claude Tools App Creator!'));
-  console.log(chalk.yellow('Let\'s set up your new Claude-ready React app.'));
-
   const answers = await inquirer.prompt([
     {
       type: 'input',
@@ -33,12 +30,12 @@ async function createNewApp() {
 
   console.log(chalk.blue(`Creating a new Claude app: ${appName}`));
 
-  // Step 1: Create new React app with Vite
+  // Create new React app with Vite
   execSync(`npm create vite@latest ${appName} -- --template react`, { stdio: 'inherit' });
   process.chdir(appName);
   execSync('npm install', { stdio: 'inherit' });
 
-  // Step 2: Install Tailwindcss and Shadcn
+  // Install Tailwindcss and Shadcn
   execSync('npm install -D tailwindcss postcss autoprefixer', { stdio: 'inherit' });
   execSync('npx tailwindcss init -p', { stdio: 'inherit' });
 
@@ -59,31 +56,17 @@ export default defineConfig({
 `;
   fs.writeFileSync('vite.config.js', viteConfig);
 
-  // Create jsconfig.json
-  const jsConfig = `
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
-  "include": ["src/**/*"]
-}
-`;
-  fs.writeFileSync('jsconfig.json', jsConfig);
-
   // Initialize shadcn-ui
   execSync('npx shadcn-ui@latest init', { stdio: 'inherit' });
 
-  // Step 3: Install other libraries and components
+  // Install other libraries and components
   execSync('npx shadcn-ui@latest add card button input', { stdio: 'inherit' });
   
   if (installLucide) {
     execSync('npm install lucide-react', { stdio: 'inherit' });
   }
 
-  // Step 4: Add main component
+  // Add main component
   const componentContent = `
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -139,7 +122,7 @@ export default ${componentName};
 
   // Update App.jsx
   const appJsxContent = `
-import './App.css'
+import './${appName}.css'
 import ${componentName} from './components/${componentName}'
 
 function App() {
@@ -155,14 +138,6 @@ export default App
 `;
 
   fs.writeFileSync(path.join('src', 'App.jsx'), appJsxContent);
-
-  // Update index.css with Tailwind directives
-  const indexCssContent = `
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-`;
-  fs.writeFileSync(path.join('src', 'index.css'), indexCssContent);
 
   console.log(chalk.green('\nNew Claude app created successfully!'));
   console.log(chalk.yellow('\nNext steps:'));
