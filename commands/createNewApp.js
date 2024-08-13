@@ -3,20 +3,25 @@ const chalk = require('chalk');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const ora = require('ora');
+const cliProgress = require('cli-progress');
 
-function runCommand(command, errorMessage, verbose) {
+function runCommand(command, errorMessage, verbose, spinner) {
   try {
     if (verbose) {
       execSync(command, { stdio: 'inherit' });
     } else {
       execSync(command, { stdio: 'ignore' });
     }
+    if (spinner) spinner.succeed();
   } catch (error) {
+    if (spinner) spinner.fail();
     console.error(chalk.red(errorMessage));
     if (verbose) {
       console.error(chalk.red(error));
     }
     console.error(chalk.yellow(`Command to run manually: ${command}`));
+    process.exit(1);
   }
 }
 
@@ -48,16 +53,28 @@ async function createNewApp(verbose = false) {
 
   console.log(chalk.blue(`Creating a new Claude app: ${appName}`));
 
+  const progress = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+  progress.start(100, 0);
+
   // Create new React app with Vite
-  runCommand(`npm create vite@latest ${appName} -- --template react`, 'Error creating Vite app', verbose);
+  let spinner = ora('Creating Vite app').start();
+  runCommand(`npm create vite@latest ${appName} -- --template react`, 'Error creating Vite app', verbose, spinner);
+  progress.update(20);
+
   process.chdir(appName);
-  runCommand('npm install', 'Error installing dependencies', verbose);
+  
+  spinner = ora('Installing dependencies').start();
+  runCommand('npm install', 'Error installing dependencies', verbose, spinner);
+  progress.update(40);
 
   // Install Tailwindcss and its dependencies
-  runCommand('npm install -D tailwindcss postcss autoprefixer', 'Error installing Tailwind CSS', verbose);
+  spinner = ora('Installing Tailwind CSS').start();
+  runCommand('npm install -D tailwindcss postcss autoprefixer', 'Error installing Tailwind CSS', verbose, spinner);
   runCommand('npx tailwindcss init -p', 'Error initializing Tailwind CSS', verbose);
+  progress.update(60);
 
   // Update vite.config.js
+  spinner = ora('Configuring Vite').start();
   const viteConfig = `
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -73,8 +90,10 @@ export default defineConfig({
 })
 `;
   fs.writeFileSync('vite.config.js', viteConfig);
+  spinner.succeed();
 
   // Create jsconfig.json
+  spinner = ora('Creating jsconfig.json').start();
   const jsConfig = {
     "compilerOptions": {
       "baseUrl": ".",
@@ -85,8 +104,12 @@ export default defineConfig({
     "include": ["src/**/*"]
   };
   fs.writeFileSync('jsconfig.json', JSON.stringify(jsConfig, null, 2));
+  spinner.succeed();
+
+  progress.update(70);
 
   // Create components.json for shadcn-ui
+  spinner = ora('Configuring shadcn-ui').start();
   const componentsJson = {
     "$schema": "https://ui.shadcn.com/schema.json",
     "style": "default",
@@ -104,73 +127,66 @@ export default defineConfig({
     }
   };
   fs.writeFileSync('components.json', JSON.stringify(componentsJson, null, 2));
+  spinner.succeed();
 
   // Install shadcn-ui
-  runCommand('npx shadcn-ui@latest init', 'Error initializing shadcn-ui', verbose);
+  spinner = ora('Initializing shadcn-ui').start();
+  runCommand('npx shadcn-ui@latest init', 'Error initializing shadcn-ui', verbose, spinner);
+  progress.update(80);
 
   // Install shadcn-ui components
-  console.log(chalk.blue('\nInstalling shadcn-ui components...'));
-  runCommand('npx shadcn-ui@latest add card button input', 'Error adding shadcn-ui components', verbose);
+  spinner = ora('Installing shadcn-ui components').start();
+  runCommand('npx shadcn-ui@latest add card button input', 'Error adding shadcn-ui components', verbose, spinner);
+  progress.update(90);
 
   if (installLucide) {
-    runCommand('npm install lucide-react', 'Error installing lucide-react', verbose);
+    spinner = ora('Installing lucide-react').start();
+    runCommand('npm install lucide-react', 'Error installing lucide-react', verbose, spinner);
   }
 
   // Add main component
+  spinner = ora('Creating main component').start();
   const componentContent = `
-import React, { useState } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-${installLucide ? "import { Send } from 'lucide-react';" : ""}
-
-const ${componentName} = () => {
-  const [inputText, setInputText] = useState('');
-  const [outputText, setOutputText] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically send the input to an API and get a response
-    setOutputText(\`Response to: "\${inputText}"\`);
+  import React from 'react';
+  import { GithubIcon } from 'lucide-react';
+  
+  const ${componentName} = () => {
+    return (
+      <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4 text-center">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Sample Website Built with claude-tools
+          </h1>
+          <p className="text-xl text-gray-600">
+            Get started by editing your React components
+          </p>
+        </header>
+        
+        <div className="mb-8">
+          <p className="text-lg text-gray-700">
+            Developed by devoidsloth on GitHub
+          </p>
+        </div>
+        
+        <footer className="text-gray-600">
+          <a href="https://github.com/DevoidSloth/claude-tools" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800">
+            <GithubIcon className="mr-2" size={20} />
+            View on GitHub
+          </a>
+        </footer>
+      </div>
+    );
   };
-
-  return (
-    <Card className="w-full max-w-md mx-auto mt-6">
-      <CardHeader>
-        <CardTitle>LLM Model Interface</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            placeholder="Enter your prompt"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-          />
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button onClick={handleSubmit}>
-          ${installLucide ? "<Send className='mr-2 h-4 w-4' />" : ""}
-          Submit
-        </Button>
-      </CardFooter>
-      {outputText && (
-        <CardContent>
-          <p>{outputText}</p>
-        </CardContent>
-      )}
-    </Card>
-  );
-};
-
-export default ${componentName};
-`;
+  
+  export default ${componentName};
+  `;
 
   fs.mkdirSync(path.join('src', 'components'), { recursive: true });
   fs.writeFileSync(path.join('src', 'components', `${componentName}.jsx`), componentContent);
+  spinner.succeed();
 
   // Update App.jsx
+  spinner = ora('Updating App.jsx').start();
   const appJsxContent = `
 import './index.css'
 import ${componentName} from './components/${componentName}'
@@ -188,6 +204,117 @@ export default App
 `;
 
   fs.writeFileSync(path.join('src', 'App.jsx'), appJsxContent);
+  spinner.succeed();
+
+    spinner = ora('Installing additional dependencies').start();
+  runCommand('npm install class-variance-authority @radix-ui/react-slot clsx tailwind-merge', 'Error installing additional dependencies', verbose, spinner);
+  progress.update(85);
+
+  // Create lib/utils.js
+  spinner = ora('Creating utility functions').start();
+  const utilsContent = `
+import { clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+ 
+export function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+`;
+  fs.mkdirSync(path.join('src', 'lib'), { recursive: true });
+  fs.writeFileSync(path.join('src', 'lib', 'utils.js'), utilsContent);
+  spinner.succeed();
+
+  // Update Tailwind CSS configuration
+  spinner = ora('Updating Tailwind CSS configuration').start();
+  const tailwindConfig = `
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{js,jsx}',
+    './components/**/*.{js,jsx}',
+    './app/**/*.{js,jsx}',
+    './src/**/*.{js,jsx}',
+	],
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}
+`;
+  fs.writeFileSync('tailwind.config.js', tailwindConfig);
+  spinner.succeed();
+
+  // Install tailwindcss-animate
+  spinner = ora('Installing tailwindcss-animate').start();
+  runCommand('npm install tailwindcss-animate', 'Error installing tailwindcss-animate', verbose, spinner);
+  progress.update(95);
+
+
+  progress.update(100);
+  progress.stop();
 
   console.log(chalk.green('\nNew Claude app created successfully!'));
   console.log(chalk.yellow('\nNext steps:'));

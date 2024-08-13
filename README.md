@@ -1,52 +1,62 @@
 # Claude Tools
 
-Claude Tools is a CLI utility for quickly setting up and managing Claude-related React applications. It streamlines the process of creating new apps with pre-configured settings and components tailored for Claude AI interactions.
-
-## Inspiration
-
-This project is inspired by and based on the excellent work done in [Bklieger/Claude-React-Jumpstart](https://github.com/Bklieger/Claude-React-Jumpstart). We've expanded on the original concept to create a more flexible and extensible CLI tool.
+Claude Tools is a powerful CLI utility for quickly setting up and managing Claude-generated React applications. It streamlines the process of creating new apps with pre-configured settings and components tailored for Claude's Artifacts.
 
 ## Features
 
 - Quick setup of a new React app with Vite
 - Automatic installation and configuration of Tailwind CSS and Shadcn UI
-- Creation of a customizable main component for Claude AI interaction
-- Optional installation of lucide-react for icons
-- Interactive CLI interface for easy project setup
+- Creation of a customizable main component
+- Optional installation of lucide-react icons
+- Interactive CLI interface with progress indicators
+- Verbose mode for detailed output
+
+## Installation
+
+To install Claude Tools globally, run:
+
+```bash
+npm install -g claude-tools
+```
+
+This will make the `claude-tools` command available system-wide.
 
 ## Usage
 
 To create a new Claude-ready React app, run:
 
 ```bash
-npx claude-tools new-app
+claude-tools new-app
 ```
-
-If you haven't used `claude-tools` before, `npx` will prompt you to install it temporarily. After confirming, it will run the command.
 
 Follow the interactive prompts to customize your new app:
 
 1. Enter the name of your project
 2. Specify the name of the main component
-3. Choose whether to install lucide-react for icons
+3. Choose whether to install lucide-react icons
 
 The tool will then create a new directory with your app name, set up the React project with Vite, install necessary dependencies, and create the main component.
 
-## Quickstart
+### Options
 
-After creating your app, follow these steps to get started:
+- `--verbose`: Show detailed output during the app creation process
+- `-v, --version`: Output the current version of Claude Tools
 
-1. Navigate to your new app directory:
-   ```bash
-   cd your-app-name
-   ```
+Example with verbose output:
 
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+claude-tools new-app --verbose
+```
 
-3. Open your browser and visit `http://localhost:5173` to see your new app in action!
+## What's Included
+
+Your new Claude app will come with:
+
+- A React project set up with Vite
+- Tailwind CSS configured and ready to use
+- Shadcn UI components (Card, Button, Input) pre-installed
+- A main component 
+- Proper configuration for using `@` imports
 
 ## Development
 
@@ -79,3 +89,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Bklieger/Claude-React-Jumpstart](https://github.com/Bklieger/Claude-React-Jumpstart) for the original inspiration and guide.
 - The Anthropic team for creating Claude AI.
 - The creators and maintainers of React, Vite, Tailwind CSS, Shadcn UI, and Lucide React.
+
+## Support
+
+If you encounter any issues or have questions, please file an issue on the [GitHub repository](https://github.com/your-username/claude-tools/issues).
+
+Happy coding with Claude Tools!
