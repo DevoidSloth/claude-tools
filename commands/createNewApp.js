@@ -6,6 +6,16 @@ const path = require('path');
 const ora = require('ora');
 const cliProgress = require('cli-progress');
 
+function isPackageInstalled(packageName) {
+  try {
+    require.resolve(packageName);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+
 function runCommand(command, errorMessage, verbose, spinner) {
   try {
     if (verbose) {
@@ -146,40 +156,73 @@ export default defineConfig({
 
   // Add main component
   spinner = ora('Creating main component').start();
-  const componentContent = `
-  import React from 'react';
-  import { GithubIcon } from 'lucide-react';
+  const isLucideInstalled = isPackageInstalled('lucide-react');
   
-  const ${componentName} = () => {
-    return (
-      <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4 text-center">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Sample Website Built with claude-tools
-          </h1>
-          <p className="text-xl text-gray-600">
-            Get started by editing your React components
-          </p>
-        </header>
-        
-        <div className="mb-8">
-          <p className="text-lg text-gray-700">
-            Developed by devoidsloth on GitHub
-          </p>
-        </div>
-        
-        <footer className="text-gray-600">
-          <a href="https://github.com/DevoidSloth/claude-tools" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800">
-            <GithubIcon className="mr-2" size={20} />
-            View on GitHub
-          </a>
-        </footer>
+  const componentContent = isLucideInstalled ? `
+import React from 'react';
+import { GithubIcon } from 'lucide-react';
+
+const ${componentName} = () => {
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4 text-center">
+      <header className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          Sample Website Built with claude-tools
+        </h1>
+        <p className="text-xl text-gray-600">
+          Get started by editing your React components
+        </p>
+      </header>
+      
+      <div className="mb-8">
+        <p className="text-lg text-gray-700">
+          Developed by devoidsloth on GitHub
+        </p>
       </div>
-    );
-  };
-  
-  export default ${componentName};
-  `;
+      
+      <footer className="text-gray-600">
+        <a href="https://github.com/DevoidSloth/claude-tools" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-600 hover:text-blue-800">
+          <GithubIcon className="mr-2" size={20} />
+          View on GitHub
+        </a>
+      </footer>
+    </div>
+  );
+};
+
+export default ${componentName};
+` : `
+import React from 'react';
+
+const ${componentName} = () => {
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4 text-center">
+      <header className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          Sample Website Built with claude-tools
+        </h1>
+        <p className="text-xl text-gray-600">
+          Get started by editing your React components
+        </p>
+      </header>
+      
+      <div className="mb-8">
+        <p className="text-lg text-gray-700">
+          Developed by devoidsloth on GitHub
+        </p>
+      </div>
+      
+      <footer className="text-gray-600">
+        <a href="https://github.com/DevoidSloth/claude-tools" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+          View on GitHub
+        </a>
+      </footer>
+    </div>
+  );
+};
+
+export default ${componentName};
+`;
 
   fs.mkdirSync(path.join('src', 'components'), { recursive: true });
   fs.writeFileSync(path.join('src', 'components', `${componentName}.jsx`), componentContent);
@@ -188,25 +231,105 @@ export default defineConfig({
   // Update App.jsx
   spinner = ora('Updating App.jsx').start();
   const appJsxContent = `
-import './index.css'
-import ${componentName} from './components/${componentName}'
-
-function App() {
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to ${appName}</h1>
-      <${componentName}/>
-    </div>
-  )
-}
-
-export default App
-`;
+  import './index.css'
+  import ${componentName} from './components/${componentName}'
+  
+  function App() {
+    return (
+      <>
+        <${componentName}/>
+      </>
+    )
+  }
+  
+  export default App
+  `;
 
   fs.writeFileSync(path.join('src', 'App.jsx'), appJsxContent);
   spinner.succeed();
 
-    spinner = ora('Installing additional dependencies').start();
+  // Create empty App.css
+  spinner = ora('Creating empty App.css').start();
+  fs.writeFileSync(path.join('src', 'App.css'), '');
+  spinner.succeed();
+
+  // Update index.css
+  spinner = ora('Updating index.css').start();
+  const indexCssContent = `
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+
+  @layer base {
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --radius: 0.5rem;
+      --chart-1: 12 76% 61%;
+      --chart-2: 173 58% 39%;
+      --chart-3: 197 37% 24%;
+      --chart-4: 43 74% 66%;
+      --chart-5: 27 87% 67%;
+    }
+    .dark {
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --primary: 210 40% 98%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --secondary: 217.2 32.6% 17.5%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 17.5%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 212.7 26.8% 83.9%;
+      --chart-1: 220 70% 50%;
+      --chart-2: 160 60% 45%;
+      --chart-3: 30 80% 55%;
+      --chart-4: 280 65% 60%;
+      --chart-5: 340 75% 55%;
+    }
+  }
+
+  @layer base {
+    * {
+      @apply border-border;
+    }
+    body {
+      @apply bg-background text-foreground;
+    }
+  }
+  `;
+
+  fs.writeFileSync(path.join('src', 'index.css'), indexCssContent);
+  spinner.succeed();
+
+  spinner = ora('Installing additional dependencies').start();
   runCommand('npm install class-variance-authority @radix-ui/react-slot clsx tailwind-merge', 'Error installing additional dependencies', verbose, spinner);
   progress.update(85);
 
