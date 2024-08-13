@@ -92,6 +92,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have questions, please file an issue on the [GitHub repository](https://github.com/your-username/claude-tools/issues).
+If you encounter any issues or have questions, please file an issue on the [GitHub repository](https://github.com/devoidsloth/claude-tools/issues).
 
 Happy coding with Claude Tools!
