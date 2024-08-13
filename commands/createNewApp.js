@@ -4,7 +4,25 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-async function createNewApp() {
+function runCommand(command, errorMessage, verbose) {
+  try {
+    if (verbose) {
+      execSync(command, { stdio: 'inherit' });
+    } else {
+      execSync(command, { stdio: 'ignore' });
+    }
+  } catch (error) {
+    console.error(chalk.red(errorMessage));
+    if (verbose) {
+      console.error(chalk.red(error));
+    }
+    console.error(chalk.yellow(`Command to run manually: ${command}`));
+  }
+}
+
+async function createNewApp(verbose = false) {
+  console.log(chalk.blue('Welcome to Claude Tools App Creator!'));
+
   const answers = await inquirer.prompt([
     {
       type: 'input',
@@ -31,13 +49,13 @@ async function createNewApp() {
   console.log(chalk.blue(`Creating a new Claude app: ${appName}`));
 
   // Create new React app with Vite
-  execSync(`npm create vite@latest ${appName} -- --template react`, { stdio: 'inherit' });
+  runCommand(`npm create vite@latest ${appName} -- --template react`, 'Error creating Vite app', verbose);
   process.chdir(appName);
-  execSync('npm install', { stdio: 'inherit' });
+  runCommand('npm install', 'Error installing dependencies', verbose);
 
-  // Install Tailwindcss and Shadcn
-  execSync('npm install -D tailwindcss postcss autoprefixer', { stdio: 'inherit' });
-  execSync('npx tailwindcss init -p', { stdio: 'inherit' });
+  // Install Tailwindcss and its dependencies
+  runCommand('npm install -D tailwindcss postcss autoprefixer', 'Error installing Tailwind CSS', verbose);
+  runCommand('npx tailwindcss init -p', 'Error initializing Tailwind CSS', verbose);
 
   // Update vite.config.js
   const viteConfig = `
@@ -56,14 +74,46 @@ export default defineConfig({
 `;
   fs.writeFileSync('vite.config.js', viteConfig);
 
-  // Initialize shadcn-ui
-  execSync('npx shadcn-ui@latest init', { stdio: 'inherit' });
+  // Create jsconfig.json
+  const jsConfig = {
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["src/*"]
+      }
+    },
+    "include": ["src/**/*"]
+  };
+  fs.writeFileSync('jsconfig.json', JSON.stringify(jsConfig, null, 2));
 
-  // Install other libraries and components
-  execSync('npx shadcn-ui@latest add card button input', { stdio: 'inherit' });
-  
+  // Create components.json for shadcn-ui
+  const componentsJson = {
+    "$schema": "https://ui.shadcn.com/schema.json",
+    "style": "default",
+    "rsc": false,
+    "tsx": false,
+    "tailwind": {
+      "config": "tailwind.config.js",
+      "css": "src/index.css",
+      "baseColor": "slate",
+      "cssVariables": true
+    },
+    "aliases": {
+      "components": "@/components",
+      "utils": "@/lib/utils"
+    }
+  };
+  fs.writeFileSync('components.json', JSON.stringify(componentsJson, null, 2));
+
+  // Install shadcn-ui
+  runCommand('npx shadcn-ui@latest init', 'Error initializing shadcn-ui', verbose);
+
+  // Install shadcn-ui components
+  console.log(chalk.blue('\nInstalling shadcn-ui components...'));
+  runCommand('npx shadcn-ui@latest add card button input', 'Error adding shadcn-ui components', verbose);
+
   if (installLucide) {
-    execSync('npm install lucide-react', { stdio: 'inherit' });
+    runCommand('npm install lucide-react', 'Error installing lucide-react', verbose);
   }
 
   // Add main component
@@ -122,7 +172,7 @@ export default ${componentName};
 
   // Update App.jsx
   const appJsxContent = `
-import './${appName}.css'
+import './index.css'
 import ${componentName} from './components/${componentName}'
 
 function App() {

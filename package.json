@@ -1,6 +1,6 @@
 {
   "name": "claude-tools",
-  "version": "1.0.4",
+  "version": "1.0.12",
   "description": "CLI tools for creating and managing Claude artifacts",
   "main": "index.js",
   "bin": {
@@ -13,14 +13,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["claude", "react", "cli", "ai", "artifact"],
+  "keywords": [
+    "claude",
+    "react",
+    "cli",
+    "ai",
+    "artifact"
+  ],
   "author": "Devoid Sloth",
   "license": "MIT",
   "dependencies": {
-    "inquirer": "^8.2.4",
+    "axios": "^0.21.1",
     "chalk": "^4.1.2",
+    "cli-progress": "^3.12.0",
     "commander": "^8.3.0",
-    "axios": "^0.21.1"
+    "inquirer": "^8.2.4",
+    "ora": "^8.0.1"
   },
   "repository": {
     "type": "git",
