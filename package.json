@@ -1,6 +1,6 @@
 {
   "name": "claude-tools",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "CLI tools for creating and managing Claude artifacts",
   "main": "index.js",
   "bin": {

@@ -92,6 +92,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
+KNOWN ISSUE: If you are on mac and in a file without write permissions you may need to use the command 
+`sudo -s`
+before running it.
+
 If you encounter any issues or have questions, please file an issue on the [GitHub repository](https://github.com/devoidsloth/claude-tools/issues).
 
 Happy coding with Claude Tools!

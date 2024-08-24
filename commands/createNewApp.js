@@ -141,12 +141,32 @@ export default defineConfig({
 
   // Install shadcn-ui
   spinner = ora('Initializing shadcn-ui').start();
-  runCommand('npx shadcn-ui@latest init', 'Error initializing shadcn-ui', verbose, spinner);
+  runCommand('npx shadcn-ui@latest init --yes', 'Error initializing shadcn-ui', verbose, spinner);
   progress.update(80);
 
   // Install shadcn-ui components
   spinner = ora('Installing shadcn-ui components').start();
-  runCommand('npx shadcn-ui@latest add card button input', 'Error adding shadcn-ui components', verbose, spinner);
+  const shadcnComponents = [
+    'alert',
+    'button',
+    'card',
+    'checkbox',
+    'dialog',
+    'input',
+    'label',
+    'popover',
+    'select',
+    'separator',
+    'switch',
+    'tabs',
+    'textarea',
+    'toast'
+  ];
+  
+  for (const component of shadcnComponents) {
+    runCommand(`npx shadcn-ui@latest add ${component} --yes`, `Error adding shadcn-ui component: ${component}`, verbose);
+  }
+  spinner.succeed();
   progress.update(90);
 
   if (installLucide) {
