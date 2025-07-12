@@ -1,6 +1,8 @@
-# Claude Tools
+# Claude Tools (DEPRECATED)
 
 Claude Tools is a powerful CLI utility for quickly setting up and managing Claude-generated React applications. It streamlines the process of creating new apps with pre-configured settings and components tailored for Claude's Artifacts.
+
+**The tool is currently deprecated due to a change in some commands it used to rely on, feel free to submit a PR if you would like to fix it**
 
 ## Features
 
